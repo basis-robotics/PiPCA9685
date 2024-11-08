@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 23)
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 message(STATUS "Using Python interpreter: ${Python_EXECUTABLE}")
 
-find_package(pybind11 REQUIRED)
+find_package(pybind11 QUIET)
 
 #
 # LIBRARY
@@ -39,11 +39,11 @@ add_library(PiPCA9685::PiPCA9685 ALIAS PiPCA9685_cpp)
 #
 # PYTHON BINDINGS
 #
-
-pybind11_add_module(PiPCA9685_python src/PCA9685-Python.cpp)
-set_target_properties(PiPCA9685_python PROPERTIES OUTPUT_NAME PiPCA9685)
-target_link_libraries(PiPCA9685_python PRIVATE PiPCA9685_cpp)
-
+if(pybind11_FOUND)
+  pybind11_add_module(PiPCA9685_python src/PCA9685-Python.cpp)
+  set_target_properties(PiPCA9685_python PROPERTIES OUTPUT_NAME PiPCA9685)
+  target_link_libraries(PiPCA9685_python PRIVATE PiPCA9685_cpp)
+endif()
 #
 # INSTALLATION
 #
@@ -55,11 +55,11 @@ install(TARGETS PiPCA9685_cpp
     FILE_SET HEADERS
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-
-install(TARGETS PiPCA9685_python
-    DESTINATION ${Python_SITEARCH}
-)
-
+if(pybind11_FOUND)
+  install(TARGETS PiPCA9685_python
+      DESTINATION ${Python_SITEARCH}
+  )
+endif()
 install(EXPORT PiPCA9685_export
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/PiPCA9685
     NAMESPACE PiPCA9685::
